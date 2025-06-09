@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -26,8 +27,16 @@
   }
 }
 
-.card {
-  padding: 2em;
+
+
+
+.d-flex {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1em;
 }
 
 .read-the-docs {
@@ -35,11 +44,10 @@
 }
 h1 {
   color: #ffffff;
- /* font-family: "itc-benguiat", serif; */
-font-weight: 500;
+  font-family: 'Orbitron', sans-serif;
+font-weight: 700;
 font-style: normal;
 }
-
 
 .logo {
   height: 30%;
@@ -47,10 +55,10 @@ font-style: normal;
 }
 
 .btn {
-  background-color: red;
+  background-color: #303c65;
 }
 
 .btn:hover {
-  background-color: rgb(255, 40, 40) !important;
-  border: 1px solid rgb(138, 120, 120);
+  background-color: rgb(131, 120, 226) !important;
+  border: none;
 }

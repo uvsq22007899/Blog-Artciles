@@ -1,84 +1,121 @@
-import { Button, Tooltip, Spin, Card } from "antd";
-import logo from "/logo.webp";
+import { Button, Tooltip, Spin, Card, Popconfirm } from "antd";
+import logo from "./assets/Sujet.png";
 import "./App.css";
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import ArticleModal from "./components/ArticleModal";
 import { useEffect, useState } from "react";
-import { getArticles, deleteArticle } from "./fire";
+import { getArticles, addArticle, updateArticle, deleteArticle } from "./fire";
+
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState(null);
 
-
   useEffect(() => {
-    getArticles(posts => {
-      setArticles(posts)
-      setLoading(false)
+    getArticles((posts) => {
+      setArticles(posts);
+      setLoading(false);
+    });
+  }, []);
 
-    })
-  }, [])
+  const handleEditArticle = (article) => {
+    setSelectedArticle(article); // Définit l'article sélectionné
+    setIsModalOpen(true); // Ouvre le modal
+  };
 
-  // Fonction appelée au clique sur un bouton de suppression
-  const removeArticle = () => {
-    // Supprimer l'article cliqué de la base de données
-    deleteArticle(selectedArticle)
-  }
+  const handleModalClose = (updatedArticle) => {
+    if (updatedArticle) {
+      const saveArticle = updatedArticle.id
+        ? updateArticle // Si l'article a un ID, on le met à jour
+        : addArticle; // Sinon, on l'ajoute
 
-  const actions = [
-    <EditOutlined key="edit" />,
-  ];
+      saveArticle(updatedArticle)
+        .then(() => {
+          setArticles((prevArticles) => {
+            const articleExists = prevArticles.some(
+              (article) => article.id === updatedArticle.id
+            );
+            if (articleExists) {
+              return prevArticles.map((article) =>
+                article.id === updatedArticle.id ? updatedArticle : article
+              );
+            }
+            return [...prevArticles, updatedArticle]; // Ajoute le nouvel article
+          });
+        })
+        .catch((error) => {
+          console.error("Erreur lors de l'enregistrement de l'article :", error);
+        });
+    }
+    setSelectedArticle(null); // Réinitialise l'article sélectionné
+    setIsModalOpen(false); // Ferme le modal
+  };
 
-
-  console.log(articles, loading);
+  const handleDeleteArticle = (articleToDelete) => {
+    deleteArticle(articleToDelete)
+  };
 
   return (
     <>
       <div>
         <a href="https://vite.dev/" target="_blank">
-          <img src={logo} className="logo" alt="logo" />
         </a>
       </div>
 
+      <h1>À LA RENCONTRE DU COSMOS ✨🚀</h1>
 
-
-
-      <h1>SpaceTitle</h1>
-      {loading ? (
-        <Spin />
-      ) : (
-        // Sinon, affiche tous les articles dans des cartes Ant Design
-        articles.map(article => (
-          <Card
-            key={article.id}
-            title={article.title}
-            bordered={false}
-            style={{ width: 300 }}
-            actions={actions}
-          >
-            <p>{article.content}</p>
-          </Card>
-        ))
-      )}
-
-      <Tooltip title="Cliquez ici pour ajouter un article">
+      <Tooltip title="Donnez nous votre avis sur notre Hotel">
         <Button
           type="primary"
           className="btn"
           icon={<EditOutlined />}
           onClick={() => setIsModalOpen(true)}
         >
-          Rédiger un article
+          Décrivez votre voyage spatial
         </Button>
       </Tooltip>
       {isModalOpen && (
         <ArticleModal
-          handleOk={() => setIsModalOpen(false)}
           isOpen={isModalOpen}
+          handleOk={handleModalClose}
           handleCancel={() => setIsModalOpen(false)}
-        ></ArticleModal>
+          article={selectedArticle}
+        />
       )}
+      <div className="d-flex">
+        {loading ? (
+          <Spin />
+        ) : (
+          articles.map((article) => (
+            <Card
+              className="carte"
+              key={article.id}
+              title={article.title}
+              bordered={false}
+              style={{ width: 300 }}
+              actions={[
+                <EditOutlined
+                  key="edit"
+                  onClick={() => handleEditArticle(article)}
+                />,
+                <Popconfirm
+                  title="Supprimer cet article ?"
+                  description="Êtes-vous sûr de vouloir supprimer cet article ?"
+                  onConfirm={() => handleDeleteArticle(article)}
+                  onCancel={() => console.log("Suppression annulée")}
+                  okText="Oui"
+                  cancelText="Non"
+                >
+                  <DeleteOutlined key="trash" />
+                </Popconfirm>,
+              ]}
+            >
+              <p>{article.content}</p>
+            </Card>
+          ))
+        )}
+      </div>
     </>
   );
 }
